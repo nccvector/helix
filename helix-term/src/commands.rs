@@ -523,6 +523,7 @@ impl MappableCommand {
         surround_delete, "Surround delete",
         select_textobject_around, "Select around object",
         select_textobject_inner, "Select inside object",
+        select_textobject_inner_word_faizan, "Select word under cursor",
         goto_next_function, "Goto next function",
         goto_prev_function, "Goto previous function",
         goto_next_class, "Goto next type definition",
@@ -5516,6 +5517,24 @@ fn select_textobject_around(cx: &mut Context) {
 
 fn select_textobject_inner(cx: &mut Context) {
     select_textobject(cx, textobject::TextObject::Inside);
+}
+
+fn select_textobject_inner_word_faizan(cx: &mut Context) {
+    let count = cx.count();
+    let objtype = textobject::TextObject::Inside;
+
+    let textobject = move |editor: &mut Editor| {
+        let (view, doc) = current!(editor);
+        let text = doc.text().slice(..);
+
+        let selection = doc.selection(view.id).clone().transform(|range| {
+            textobject::textobject_word(text, range, objtype, count, false)
+        });
+
+        doc.set_selection(view.id, selection);
+    };
+
+    cx.editor.apply_motion(textobject);
 }
 
 fn select_textobject(cx: &mut Context, objtype: textobject::TextObject) {
